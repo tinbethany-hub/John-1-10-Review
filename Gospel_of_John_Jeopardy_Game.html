@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gospel of John - Jeopardy Review Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4e4a6;
+            --deep-blue: #1a1a3e;
+            --royal-blue: #2d2d6b;
+            --crimson: #8b0000;
+            --parchment: #f5f0e1;
+            --ink: #2c2416;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', Georgia, serif;
+            background: linear-gradient(135deg, var(--deep-blue) 0%, #0d0d1f 100%);
+            min-height: 100vh;
+            color: var(--parchment);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 3px solid var(--gold);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header::after {
+            content: '✝';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--deep-blue);
+            padding: 0 20px;
+            color: var(--gold);
+            font-size: 24px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: var(--gold-light);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .scores-panel {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(45, 45, 107, 0.5);
+            border-radius: 15px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .team-score {
+            text-align: center;
+            padding: 15px 30px;
+            background: linear-gradient(180deg, var(--royal-blue) 0%, var(--deep-blue) 100%);
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            min-width: 150px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .team-score:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .team-score.active {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .team-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .team-points {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--parchment);
+        }
+
+        .team-setup {
+            background: rgba(45, 45, 107, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .team-setup h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .team-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .team-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-input label {
+            color: var(--gold-light);
+            font-size: 0.9rem;
+        }
+
+        .team-input input {
+            padding: 10px 15px;
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: var(--parchment);
+            font-family: 'Lora', serif;
+            font-size: 1rem;
+            width: 150px;
+            text-align: center;
+        }
+
+        .team-input input::placeholder {
+            color: rgba(245, 240, 225, 0.5);
+        }
+
+        .team-count-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .team-count-btn {
+            padding: 10px 25px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .team-count-btn:hover, .team-count-btn.active {
+            background: var(--gold);
+            color: var(--deep-blue);
+        }
+
+        .question-count-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .question-count-section label {
+            display: block;
+            color: var(--gold-light);
+            margin-bottom: 10px;
+        }
+
+        .question-slider {
+            width: 80%;
+            max-width: 300px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .question-count-display {
+            font-size: 1.5rem;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-bottom: 30px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background: #0a0a1a;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .category-header {
+            background: linear-gradient(180deg, var(--gold) 0%, #b8960c 100%);
+            color: var(--deep-blue);
+            padding: 12px 8px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: clamp(0.65rem, 1.3vw, 0.9rem);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .category-points {
+            display: block;
+            font-size: 0.75em;
+            margin-top: 3px;
+            opacity: 0.8;
+        }
+
+        .question-cell {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e1e5c 100%);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 700;
+            color: var(--gold);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-cell:hover:not(.used) {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            border-color: var(--gold-light);
+            background: linear-gradient(180deg, #2563eb 0%, #1e3a8a 100%);
+        }
+
+        .question-cell.used {
+            background: rgba(30, 30, 60, 0.4);
+            border-color: rgba(212, 175, 55, 0.15);
+            color: rgba(212, 175, 55, 0.2);
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(180deg, var(--royal-blue) 0%, var(--deep-blue) 100%);
+            border: 3px solid var(--gold);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .question-type {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--deep-blue);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .question-points-display {
+            color: var(--gold-light);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--parchment);
+        }
+
+        .verse-ref {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .answer-option {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .answer-option:hover:not(.disabled) {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .answer-option.selected {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .answer-option.correct {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .answer-option.incorrect {
+            border-color: var(--crimson);
+            background: rgba(139, 0, 0, 0.2);
+        }
+
+        .answer-option.disabled {
+            cursor: default;
+        }
+
+        .option-marker {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: 600;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .answer-option.selected .option-marker {
+            background: var(--gold);
+            color: var(--deep-blue);
+        }
+
+        .tf-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .tf-option {
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .multi-select .option-marker {
+            border-radius: 5px;
+        }
+
+        .team-selection {
+            margin-bottom: 25px;
+        }
+
+        .team-selection label {
+            display: block;
+            color: var(--gold-light);
+            margin-bottom: 10px;
+        }
+
+        .team-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .team-btn {
+            padding: 10px 25px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .team-btn:hover, .team-btn.active {
+            background: var(--gold);
+            color: var(--deep-blue);
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(180deg, var(--gold) 0%, #b8960c 100%);
+            border: none;
+            border-radius: 10px;
+            color: var(--deep-blue);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            text-align: center;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-display.correct {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+        }
+
+        .result-display.incorrect {
+            background: rgba(139, 0, 0, 0.2);
+            border: 2px solid var(--crimson);
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .result-explanation {
+            font-style: italic;
+            color: var(--gold-light);
+            line-height: 1.5;
+        }
+
+        .continue-btn {
+            margin-top: 20px;
+            padding: 12px 40px;
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .continue-btn:hover {
+            background: var(--gold);
+            color: var(--deep-blue);
+        }
+
+        .start-btn {
+            padding: 15px 50px;
+            background: linear-gradient(180deg, var(--gold) 0%, #b8960c 100%);
+            border: none;
+            border-radius: 10px;
+            color: var(--deep-blue);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 50px 30px;
+            background: rgba(45, 45, 107, 0.7);
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+        }
+
+        .game-over h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 30px;
+        }
+
+        .winner-announcement {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .final-scores {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .final-score-card {
+            padding: 20px 40px;
+            background: linear-gradient(180deg, var(--royal-blue) 0%, var(--deep-blue) 100%);
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+        }
+
+        .final-score-card.winner {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        .play-again-btn {
+            padding: 15px 50px;
+            background: linear-gradient(180deg, var(--gold) 0%, #b8960c 100%);
+            border: none;
+            border-radius: 10px;
+            color: var(--deep-blue);
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .progress-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--gold-light);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                gap: 3px;
+                padding: 3px;
+            }
+            
+            .question-cell {
+                padding: 6px 3px;
+                font-size: 0.85rem;
+                min-height: 36px;
+            }
+            
+            .modal-content {
+                padding: 25px 20px;
+            }
+            
+            .tf-option {
+                padding: 15px 30px;
+            }
+
+            .category-header {
+                padding: 8px 4px;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gospel of John</h1>
+            <p class="subtitle">Chapters 1–10 Review Game</p>
+        </header>
+
+        <!-- Team Setup Screen -->
+        <div id="setup-screen" class="team-setup">
+            <h2>Set Up Your Teams</h2>
+            <p style="color: var(--gold-light); margin-bottom: 20px;">Select the number of teams:</p>
+            
+            <div class="team-count-selector">
+                <button class="team-count-btn" data-count="2">2 Teams</button>
+                <button class="team-count-btn active" data-count="3">3 Teams</button>
+                <button class="team-count-btn" data-count="4">4 Teams</button>
+            </div>
+            
+            <div class="team-inputs" id="team-inputs">
+                <div class="team-input">
+                    <label>Team 1</label>
+                    <input type="text" id="team1-name" placeholder="Team Name">
+                </div>
+                <div class="team-input">
+                    <label>Team 2</label>
+                    <input type="text" id="team2-name" placeholder="Team Name">
+                </div>
+                <div class="team-input">
+                    <label>Team 3</label>
+                    <input type="text" id="team3-name" placeholder="Team Name">
+                </div>
+            </div>
+
+            <div class="question-count-section">
+                <label>How many questions per category?</label>
+                <input type="range" min="3" max="21" value="7" class="question-slider" id="question-slider" oninput="updateQuestionCount()">
+                <div class="question-count-display"><span id="q-count">7</span> questions each</div>
+                <p style="color: var(--gold-light); font-size: 0.85rem; margin-top: 10px;">
+                    Total questions available: 23 True/False, 20 Multiple Choice, 21 Multi-Answer
+                </p>
+            </div>
+            
+            <button class="start-btn" onclick="startGame()">Begin Game</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <div class="scores-panel" id="scores-panel"></div>
+            <div class="progress-info" id="progress-info"></div>
+            <div class="game-board" id="game-board"></div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="hidden">
+            <div class="game-over">
+                <h2>🏆 Game Complete! 🏆</h2>
+                <div class="winner-announcement" id="winner-announcement"></div>
+                <div class="final-scores" id="final-scores"></div>
+                <button class="play-again-btn" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div class="modal-overlay" id="question-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // ALL QUESTIONS FROM THE DOCUMENT
+        const allQuestions = {
+            trueFalse: [
+                { q: "In the beginning was the Word, and the Word was with God, and the Word was a God.", ref: "John 1:1", answer: false, explanation: "FALSE - The Word was God (not 'a God')" },
+                { q: "The light shines in the darkness, and the darkness has overcome it.", ref: "John 1:5", answer: false, explanation: "FALSE - The darkness has NOT overcome it" },
+                { q: "Jesus and His brothers had also been invited to the wedding.", ref: "John 2:2", answer: false, explanation: "FALSE - Jesus and His disciples (not brothers) had been invited" },
+                { q: "The turning of water into wine at Cana was the second sign through which Jesus revealed His glory.", ref: "John 2:11", answer: false, explanation: "FALSE - It was the FIRST sign (not second)" },
+                { q: "Jesus compared the Spirit's movement to the wind that blows wherever it pleases.", ref: "John 3:8", answer: true, explanation: "TRUE - John 3:8 confirms this comparison" },
+                { q: "John the Baptist was also baptizing at Aenon near Bethany because there was plenty of water there.", ref: "John 3:23", answer: false, explanation: "FALSE - Aenon near SALIM (not Bethany)" },
+                { q: "Peter said, \"He must become greater; I must become less.\"", ref: "John 3:30", answer: false, explanation: "FALSE - JOHN THE BAPTIST said this (not Peter)" },
+                { q: "Jesus knew that the Samaritan woman had 7 husbands.", ref: "John 4:18", answer: false, explanation: "FALSE - She had 5 husbands (not 7)" },
+                { q: "Jesus said to the disciples, \"I sent you to reap what you have not worked for.\"", ref: "John 4:38", answer: true, explanation: "TRUE - John 4:38 confirms this" },
+                { q: "The Samaritan woman went back to her town and did not tell anyone about Jesus.", ref: "John 4:28-29", answer: false, explanation: "FALSE - She went back and TOLD everyone about Jesus" },
+                { q: "My Father is always at his work to this very day, and I too am working.", ref: "John 5:17", answer: true, explanation: "TRUE - John 5:17 confirms this" },
+                { q: "Jesus said, \"Whoever honors the Son does not need to honor the Father, who sent him.\"", ref: "John 5:23", answer: false, explanation: "FALSE - Whoever does NOT honor the Son does NOT honor the Father (the opposite meaning)" },
+                { q: "Jesus' brothers encouraged Him to show His miracles in Galilee instead of Judea.", ref: "John 7:3–4", answer: false, explanation: "FALSE - They encouraged Him to go to JUDEA (not Galilee)" },
+                { q: "Jesus accused the Jewish leaders of breaking the law even though they claimed to keep it.", ref: "John 7:19", answer: true, explanation: "TRUE - John 7:19 confirms this" },
+                { q: "The Father never left Jesus alone, because Jesus always did what pleased the Father.", ref: "John 8:29", answer: true, explanation: "TRUE - John 8:29 confirms this" },
+                { q: "Jesus told the man to wash in the Pool of Bethesda.", ref: "John 9:7", answer: false, explanation: "FALSE - Pool of SILOAM (not Bethesda)" },
+                { q: "The Pharisees said they were disciples of Moses, not of Jesus.", ref: "John 9:28-29", answer: true, explanation: "TRUE - John 9:28-29 confirms this" },
+                { q: "\"I am the gate; whoever enters through me will be saved.\"", ref: "John 10:9", answer: true, explanation: "TRUE - John 10:9 confirms this" },
+                { q: "The Jews who heard Jesus's words about him giving his life for the sheep were all in one accord.", ref: "John 10:19", answer: false, explanation: "FALSE - The Jews were DIVIDED (not in one accord)" },
+                { q: "\"I and the Father are one\"", ref: "John 10:30", answer: true, explanation: "TRUE - John 10:30 confirms this" },
+                { q: "Jesus told Nicodemus, \"I have spoken to you of earthly things and you believe; how much more will you believe if I speak of heavenly things?\"", ref: "John 3:12", answer: false, explanation: "FALSE - Jesus said they do NOT believe earthly things, so how will they believe heavenly things?" },
+                { q: "Nicodemus was a Sadducee and a member of the Jewish ruling council.", ref: "John 3:1", answer: false, explanation: "FALSE - Nicodemus was a PHARISEE (not Sadducee)" },
+                { q: "Jesus said, \"Whoever accepts his testimony has certified that God is truthful.\"", ref: "John 3:27,33", answer: false, explanation: "FALSE - This was said by John the Baptist, not Jesus" }
+            ],
+            multipleChoice: [
+                { q: "Where did Jesus perform His first miracle?", ref: "John 2:1, 2:11", options: ["Jerusalem", "Nazareth", "Cana in Galilee"], answer: 2, explanation: "Cana in Galilee" },
+                { q: "What did the Jews say about the temple?", ref: "John 2:20", options: ["It was destroyed and needed rebuilding", "It took 46 years to build", "It was Jesus' body"], answer: 1, explanation: "It took 46 years to build" },
+                { q: "Who tasted the water that had been turned into wine first?", ref: "John 2:9", options: ["The servants", "The master of the banquet", "The bridegroom"], answer: 1, explanation: "The master of the banquet" },
+                { q: "Jesus said, \"No one has ever gone into heaven except the one who came from heaven—the ______.\"", ref: "John 3:13", options: ["Messiah", "Son of Man", "Holy One of Israel"], answer: 1, explanation: "Son of Man" },
+                { q: "Everyone who does evil hates the light, and will not come into the light for fear that their deeds will be ______.", ref: "John 3:20", options: ["seen", "condemned", "exposed"], answer: 2, explanation: "exposed" },
+                { q: "When Jesus offered the woman living water, she asked if he was greater than their father _____.", ref: "John 4:12", options: ["Moses", "Isaiah", "Jacob"], answer: 2, explanation: "Jacob" },
+                { q: "The water Jesus gives becomes _____.", ref: "John 4:14", options: ["A river of blessing", "A spring of water", "A well of living water"], answer: 1, explanation: "A spring of water" },
+                { q: "Why must true worshippers worship in spirit and in truth?", ref: "John 4:24", options: ["To spread the Gospel", "Because God is all powerful", "Because God is spirit"], answer: 2, explanation: "Because God is spirit" },
+                { q: "What did Jesus tell the man lying at the pool?", ref: "John 5:8", options: ["Your faith has healed you, now give thanks", "Go wash in the pool of Siloam", "Get up! Pick up your mat and walk"], answer: 2, explanation: "Get up! Pick up your mat and walk" },
+                { q: "Very truly I tell you, whoever hears my word and believes him who sent me has ______ and will not be judged but has crossed over from death to ______.", ref: "John 5:24", options: ["Eternal life, life", "Eternal life, reward", "Eternal reward, paradise"], answer: 0, explanation: "Eternal life, life" },
+                { q: "What festival was near at the time Jesus was going around Galilee?", ref: "John 7:2", options: ["Feast of Firstfruits", "Festival of Tabernacles", "Festival of Lights"], answer: 1, explanation: "Festival of Tabernacles" },
+                { q: "When Jesus went to the Festival of Tabernacles, how did He go?", ref: "John 7:10", options: ["Publicly with His brothers", "Secretly", "Not at all"], answer: 1, explanation: "Secretly" },
+                { q: "Who spoke up to the other Pharisees to defend Jesus?", ref: "John 7:50", options: ["Nicodemus, who had gone to Jesus earlier", "Caiaphas, the high priest", "Joseph of Arimathea"], answer: 0, explanation: "Nicodemus, who had gone to Jesus earlier" },
+                { q: "What did the Jews need to know that would set them free?", ref: "John 8:32", options: ["the prophecies", "the truth", "the Law"], answer: 1, explanation: "the truth" },
+                { q: "The Jews picked up stones to stone Jesus because He said He existed before _____.", ref: "John 8:58-59", options: ["Jacob", "Isaac", "Abraham"], answer: 2, explanation: "Abraham" },
+                { q: "Where did Jesus tell the blind man to go and wash?", ref: "John 9:7", options: ["In the pool of Bethesda", "In the pool of Siloam", "In the Sea of Galilee"], answer: 1, explanation: "In the pool of Siloam" },
+                { q: "What does Siloam mean?", ref: "John 9:7", options: ["Sent", "Peace", "Salvation"], answer: 0, explanation: "Sent" },
+                { q: "What did the man say after Jesus revealed Himself as the Son of Man?", ref: "John 9:38", options: ["\"Thank you, Lord\"", "\"Can I follow you?\"", "\"I believe, Lord,\" and he worshiped Him."], answer: 2, explanation: "\"I believe, Lord,\" and he worshiped Him." },
+                { q: "The Festival of Dedication was held in ____?", ref: "John 10:22", options: ["Bethsaida", "Bethany", "Jerusalem"], answer: 2, explanation: "Jerusalem" },
+                { q: "About the sheep from his pen, Jesus said:", ref: "John 10:28-29", options: ["I give them temporary life", "No one will snatch them from my hand", "They go after the stranger"], answer: 1, explanation: "No one will snatch them from my hand" }
+            ],
+            multiAnswer: [
+                { q: "The children of God are those children who are not born of____", ref: "John 1:13", options: ["Natural descent", "Human decision", "A husband's will"], answers: [0, 1, 2], explanation: "All three are correct - children born not of natural descent, nor of human decision or a husband's will, but born of God" },
+                { q: "The one and only Son ____", ref: "John 1:18", options: ["Is himself God", "Is in closest relationship with the Father", "Has made the Father known"], answers: [0, 1, 2], explanation: "All three are correct according to John 1:18" },
+                { q: "Jesus tells about his own life that___?", ref: "John 10:17-18", options: ["No one takes it from me", "I lay down my life", "I take it up again"], answers: [0, 1, 2], explanation: "All three are correct - Jesus spoke of laying down His life voluntarily and taking it up again" },
+                { q: "About the sheep in the pen, Lord Jesus said____?", ref: "John 10:28-29", options: ["I give them eternal life", "No one will snatch them out of my hand", "No one can snatch them out of my Father's hand"], answers: [0, 1, 2], explanation: "All three statements are found in John 10:28-29" },
+                { q: "What does Jesus say about night, day and light?", ref: "John 9:4-5", options: ["\"I am the light of the world\"", "\"Night is coming, when no one can work\"", "\"Let there be light\""], answers: [0, 1], explanation: "'Let there be light' is from Genesis, not John 9" },
+                { q: "What does the blind man state about Jesus in chapter 9?", ref: "John 9:11, 17, 33, 38", options: ["The man they call Jesus made some mud and put it on my eyes", "If this man were not from God, he could do nothing", "Lord, I believe"], answers: [0, 1, 2], explanation: "All three statements are found in John chapter 9" },
+                { q: "What did the neighbors say about the man after he was healed?", ref: "John 9:8-9", options: ["\"Isn't this the same man who used to sit and beg?\"", "\"No, he only looks like him\"", "\"He was never really blind\""], answers: [0, 1], explanation: "'He was never really blind' is not stated in the passage" },
+                { q: "Jesus said, \"Whoever follows me will __________\"", ref: "John 8:12", options: ["never walk in darkness", "not walk alone", "have the light of life"], answers: [0, 2], explanation: "'not walk alone' is not stated in John 8:12" },
+                { q: "Who did the Jews claim was their father?", ref: "John 8:39,41", options: ["Abraham", "God", "Moses"], answers: [0, 1], explanation: "They claimed both Abraham (8:39) and God (8:41) as their father. Moses is not mentioned." },
+                { q: "What did Jesus say about those who are thirsty?", ref: "John 7:37–38", options: ["They should come to Him and drink", "Rivers of living water will flow from within them", "They should wait until the festival ends"], answers: [0, 1], explanation: "Waiting until the festival ends is not stated" },
+                { q: "What is true regarding the pool where Jesus healed the invalid?", ref: "John 5:2", options: ["It is surrounded by fifty covered colonnades", "It is called Bethesda in Aramaic", "It is near the Sheep Gate"], answers: [1, 2], explanation: "It had FIVE colonnades (not fifty)" },
+                { q: "Who are those that testify about Jesus?", ref: "John 5:33, 37, 46", options: ["John the Baptist", "The Father", "Moses"], answers: [0, 1, 2], explanation: "All three testify about Jesus according to John chapter 5" },
+                { q: "Why did many more Samaritans become believers?", ref: "John 4:39, 42", options: ["Because of the Samaritan woman's testimony", "Because they saw Jesus' miracles", "Because they heard Jesus for themselves"], answers: [0, 2], explanation: "They did not see miracles in this passage" },
+                { q: "What kind of worshippers does the Father seek?", ref: "John 4:23", options: ["True worshippers", "Those who worship in spirit and in truth", "Those who worship in Jerusalem"], answers: [0, 1], explanation: "Jerusalem is not mentioned as what the Father seeks" },
+                { q: "What did Jesus do in the temple in Jerusalem?", ref: "John 2:15-16", options: ["Drove out the merchants and money changers", "Taught the people about the Kingdom of God", "Made a whip of cords"], answers: [0, 2], explanation: "He did not teach about the Kingdom of God in this passage" },
+                { q: "Whoever believes in the Son ____", ref: "John 3:16, 18", options: ["has eternal life", "is not condemned", "shall not perish"], answers: [0, 1, 2], explanation: "All three are stated in John 3:16 and 3:18" },
+                { q: "Everyone who does evil:", ref: "John 3:20", options: ["hates the light", "loves darkness", "will not come into the light for fear that their deeds will be exposed"], answers: [0, 2], explanation: "'Loves darkness' is not the exact wording in John 3:20" },
+                { q: "No one has ever gone into heaven except:", ref: "John 3:13", options: ["the one who came from heaven", "the one who has known the Father", "the Son of Man"], answers: [0, 2], explanation: "'the one who has known the Father' is not stated" },
+                { q: "What did John's disciples say to John about Jesus?", ref: "John 3:26", options: ["he is baptizing", "everyone is going to him", "He is the Messiah"], answers: [0, 1], explanation: "They did not say 'He is the Messiah'" },
+                { q: "The one who is from the earth, _____.", ref: "John 3:31", options: ["belongs to the earth", "is bound by earthly wisdom", "speaks as one from the earth"], answers: [0, 2], explanation: "'is bound by earthly wisdom' is not stated" },
+                { q: "Whoever believes in the Son has eternal life, but whoever rejects the Son _____.", ref: "John 3:36", options: ["will not see life", "God's wrath remains on them", "has chosen darkness over light"], answers: [0, 1], explanation: "'has chosen darkness over light' is not the exact wording" }
+            ]
+        };
+
+        // Game State
+        let gameState = {
+            teams: [],
+            teamCount: 3,
+            currentTeam: 0,
+            usedQuestions: { trueFalse: [], multipleChoice: [], multiAnswer: [] },
+            questionsPerCategory: 7,
+            shuffledQuestions: { trueFalse: [], multipleChoice: [], multiAnswer: [] }
+        };
+
+        // Initialize team count selector
+        document.querySelectorAll('.team-count-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.team-count-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                gameState.teamCount = parseInt(this.dataset.count);
+                updateTeamInputs();
+            });
+        });
+
+        function updateQuestionCount() {
+            const slider = document.getElementById('question-slider');
+            const display = document.getElementById('q-count');
+            display.textContent = slider.value;
+            gameState.questionsPerCategory = parseInt(slider.value);
+        }
+
+        function updateTeamInputs() {
+            const container = document.getElementById('team-inputs');
+            container.innerHTML = '';
+            for (let i = 1; i <= gameState.teamCount; i++) {
+                container.innerHTML += `
+                    <div class="team-input">
+                        <label>Team ${i}</label>
+                        <input type="text" id="team${i}-name" placeholder="Team Name">
+                    </div>
+                `;
+            }
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function startGame() {
+            gameState.teams = [];
+            for (let i = 1; i <= gameState.teamCount; i++) {
+                const nameInput = document.getElementById(`team${i}-name`);
+                const name = nameInput.value.trim() || `Team ${i}`;
+                gameState.teams.push({ name, score: 0 });
+            }
+            
+            // Shuffle questions for this game
+            gameState.shuffledQuestions = {
+                trueFalse: shuffleArray(allQuestions.trueFalse),
+                multipleChoice: shuffleArray(allQuestions.multipleChoice),
+                multiAnswer: shuffleArray(allQuestions.multiAnswer)
+            };
+            
+            gameState.usedQuestions = { trueFalse: [], multipleChoice: [], multiAnswer: [] };
+            
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            renderScores();
+            renderBoard();
+            updateProgress();
+        }
+
+        function renderScores() {
+            const panel = document.getElementById('scores-panel');
+            panel.innerHTML = gameState.teams.map((team, i) => `
+                <div class="team-score ${i === gameState.currentTeam ? 'active' : ''}" id="team-${i}">
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-points">${team.score}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateProgress() {
+            const totalUsed = gameState.usedQuestions.trueFalse.length + 
+                             gameState.usedQuestions.multipleChoice.length + 
+                             gameState.usedQuestions.multiAnswer.length;
+            const totalQuestions = gameState.questionsPerCategory * 3;
+            document.getElementById('progress-info').textContent = 
+                `Questions answered: ${totalUsed} / ${totalQuestions}`;
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('game-board');
+            const categories = [
+                { id: 'trueFalse', name: 'True or False', points: 100 },
+                { id: 'multipleChoice', name: 'Multiple Choice', points: 100 },
+                { id: 'multiAnswer', name: 'Select All That Apply', points: 200 }
+            ];
+            
+            let html = '';
+            
+            // Headers
+            categories.forEach(cat => {
+                html += `<div class="category-header">${cat.name}<span class="category-points">${cat.points} pts</span></div>`;
+            });
+            
+            // Questions
+            for (let i = 0; i < gameState.questionsPerCategory; i++) {
+                categories.forEach(cat => {
+                    const used = gameState.usedQuestions[cat.id].includes(i);
+                    html += `
+                        <div class="question-cell ${used ? 'used' : ''}" 
+                             data-category="${cat.id}" 
+                             data-index="${i}"
+                             data-points="${cat.points}"
+                             onclick="openQuestion('${cat.id}', ${i}, ${cat.points})">
+                            ${used ? '—' : cat.points}
+                        </div>
+                    `;
+                });
+            }
+            
+            board.innerHTML = html;
+        }
+
+        function openQuestion(category, index, points) {
+            if (gameState.usedQuestions[category].includes(index)) return;
+            
+            const question = gameState.shuffledQuestions[category][index];
+            const modal = document.getElementById('question-modal');
+            const body = document.getElementById('modal-body');
+            
+            let html = '';
+            
+            const typeNames = {
+                trueFalse: 'True or False',
+                multipleChoice: 'Multiple Choice (One Answer)',
+                multiAnswer: 'Select All That Apply'
+            };
+            html += `<div class="question-type">${typeNames[category]}</div>`;
+            html += `<div class="question-points-display">${points} Points</div>`;
+            
+            html += `<div class="question-text">${question.q} <span class="verse-ref">(${question.ref})</span></div>`;
+            
+            html += `
+                <div class="team-selection">
+                    <label>Which team is answering?</label>
+                    <div class="team-buttons">
+                        ${gameState.teams.map((team, i) => `
+                            <button class="team-btn ${i === gameState.currentTeam ? 'active' : ''}" 
+                                    onclick="selectTeam(${i})" data-team="${i}">
+                                ${team.name}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            if (category === 'trueFalse') {
+                html += `
+                    <div class="answer-options tf-options">
+                        <div class="answer-option tf-option" data-value="true" onclick="selectTF(this)">
+                            <span class="option-marker">T</span> TRUE
+                        </div>
+                        <div class="answer-option tf-option" data-value="false" onclick="selectTF(this)">
+                            <span class="option-marker">F</span> FALSE
+                        </div>
+                    </div>
+                `;
+            } else if (category === 'multipleChoice') {
+                html += `<div class="answer-options">`;
+                question.options.forEach((opt, i) => {
+                    html += `
+                        <div class="answer-option" data-index="${i}" onclick="selectMC(this)">
+                            <span class="option-marker">${String.fromCharCode(65 + i)}</span>
+                            <span>${opt}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `<p style="color: var(--gold-light); margin-bottom: 15px; font-style: italic;">Select ALL correct answers (there may be 1, 2, or 3 correct)</p>`;
+                html += `<div class="answer-options multi-select">`;
+                question.options.forEach((opt, i) => {
+                    html += `
+                        <div class="answer-option" data-index="${i}" onclick="toggleMA(this)">
+                            <span class="option-marker">${String.fromCharCode(65 + i)}</span>
+                            <span>${opt}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            
+            html += `<button class="submit-btn" onclick="checkAnswer('${category}', ${index}, ${points})">Submit Answer</button>`;
+            html += `<div id="result-area"></div>`;
+            
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function selectTeam(index) {
+            gameState.currentTeam = index;
+            document.querySelectorAll('.team-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.team-btn[data-team="${index}"]`).classList.add('active');
+        }
+
+        function selectTF(element) {
+            document.querySelectorAll('.tf-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function selectMC(element) {
+            document.querySelectorAll('.answer-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function toggleMA(element) {
+            element.classList.toggle('selected');
+        }
+
+        function checkAnswer(category, index, points) {
+            const question = gameState.shuffledQuestions[category][index];
+            let isCorrect = false;
+            
+            if (category === 'trueFalse') {
+                const selected = document.querySelector('.tf-option.selected');
+                if (!selected) {
+                    alert('Please select True or False');
+                    return;
+                }
+                const answer = selected.dataset.value === 'true';
+                isCorrect = answer === question.answer;
+            } else if (category === 'multipleChoice') {
+                const selected = document.querySelector('.answer-option.selected');
+                if (!selected) {
+                    alert('Please select an answer');
+                    return;
+                }
+                const answerIndex = parseInt(selected.dataset.index);
+                isCorrect = answerIndex === question.answer;
+            } else {
+                const selected = document.querySelectorAll('.answer-option.selected');
+                if (selected.length === 0) {
+                    alert('Please select at least one answer');
+                    return;
+                }
+                const selectedIndices = Array.from(selected).map(el => parseInt(el.dataset.index)).sort((a,b) => a-b);
+                const correctIndices = [...question.answers].sort((a,b) => a-b);
+                isCorrect = JSON.stringify(selectedIndices) === JSON.stringify(correctIndices);
+            }
+            
+            // Disable all options
+            document.querySelectorAll('.answer-option').forEach(opt => opt.classList.add('disabled'));
+            
+            // Show correct/incorrect styling
+            if (category === 'trueFalse') {
+                document.querySelectorAll('.tf-option').forEach(opt => {
+                    const val = opt.dataset.value === 'true';
+                    if (val === question.answer) opt.classList.add('correct');
+                    else if (opt.classList.contains('selected')) opt.classList.add('incorrect');
+                });
+            } else if (category === 'multipleChoice') {
+                document.querySelectorAll('.answer-option').forEach(opt => {
+                    const idx = parseInt(opt.dataset.index);
+                    if (idx === question.answer) opt.classList.add('correct');
+                    else if (opt.classList.contains('selected')) opt.classList.add('incorrect');
+                });
+            } else {
+                document.querySelectorAll('.answer-option').forEach(opt => {
+                    const idx = parseInt(opt.dataset.index);
+                    if (question.answers.includes(idx)) opt.classList.add('correct');
+                    else if (opt.classList.contains('selected')) opt.classList.add('incorrect');
+                });
+            }
+            
+            // Update score
+            if (isCorrect) {
+                gameState.teams[gameState.currentTeam].score += points;
+            }
+            
+            // Show result
+            const resultArea = document.getElementById('result-area');
+            resultArea.innerHTML = `
+                <div class="result-display ${isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="result-icon">${isCorrect ? '✓' : '✗'}</div>
+                    <div class="result-text">${isCorrect ? 'Correct!' : 'Incorrect'}</div>
+                    <div class="result-explanation">${question.explanation}</div>
+                    <button class="continue-btn" onclick="continueGame('${category}', ${index})">Continue</button>
+                </div>
+            `;
+            
+            document.querySelector('.submit-btn').style.display = 'none';
+        }
+
+        function continueGame(category, index) {
+            gameState.usedQuestions[category].push(index);
+            gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
+            
+            closeModal();
+            renderScores();
+            renderBoard();
+            updateProgress();
+            
+            const totalUsed = gameState.usedQuestions.trueFalse.length + 
+                             gameState.usedQuestions.multipleChoice.length + 
+                             gameState.usedQuestions.multiAnswer.length;
+            
+            if (totalUsed >= gameState.questionsPerCategory * 3) {
+                showGameOver();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('question-modal').classList.remove('active');
+        }
+
+        function showGameOver() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('gameover-screen').classList.remove('hidden');
+            
+            const maxScore = Math.max(...gameState.teams.map(t => t.score));
+            const winners = gameState.teams.filter(t => t.score === maxScore);
+            
+            const announcement = document.getElementById('winner-announcement');
+            if (winners.length > 1) {
+                announcement.innerHTML = `🎉 It's a tie between ${winners.map(w => w.name).join(' and ')}! 🎉`;
+            } else {
+                announcement.innerHTML = `🎉 ${winners[0].name} Wins! 🎉`;
+            }
+            
+            const finalScores = document.getElementById('final-scores');
+            finalScores.innerHTML = gameState.teams
+                .sort((a, b) => b.score - a.score)
+                .map(team => `
+                    <div class="final-score-card ${team.score === maxScore ? 'winner' : ''}">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-points">${team.score}</div>
+                    </div>
+                `).join('');
+        }
+
+        function resetGame() {
+            gameState = {
+                teams: [],
+                teamCount: 3,
+                currentTeam: 0,
+                usedQuestions: { trueFalse: [], multipleChoice: [], multiAnswer: [] },
+                questionsPerCategory: 7,
+                shuffledQuestions: { trueFalse: [], multipleChoice: [], multiAnswer: [] }
+            };
+            
+            document.getElementById('gameover-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+            updateTeamInputs();
+        }
+
+        document.getElementById('question-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Initialize
+        updateTeamInputs();
+    </script>
+</body>
+</html>
